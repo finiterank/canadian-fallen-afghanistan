@@ -1,0 +1,35 @@
+Fallen Canadian Troops in Afghanistan
+========================================================
+
+One hundred fifty eight members of the military lost their lives during the Canadian presence in Afghanistan. 
+
+```{r}
+library(Hmisc)
+library(plyr)
+library(ggplot2)
+```
+
+```{r}
+fallen <- read.csv("data//fallen.troops.csv")
+fallen$rank <- sapply(fallen$rank.and.name,first.word)
+fallen$rank <- as.factor(fallen$rank)
+fallen$name <- gsub("^.*?\ ","",as.character(fallen$rank.and.name))
+fallen <- fallen[,c("rank", "name", "age", "city", "province", "date", "year", "cause.of.death")]
+fallen$full.date <- paste(fallen$date, fallen$year, sep=" ")
+fallen$full.date <- as.Date(fallen$full.date, " %B %d %Y")
+counting.df <- ddply(fallen, ~full.date, summarise, cuantos = length(name), cause = cause.of.death[1])
+counting.df$cumsum <- cumsum(counting.df$cuantos)
+ggplot(counting.df, aes(x=full.date, y=cumsum)) + 
+          geom_line(color="orangered1", size=.3) + 
+          geom_point(aes(colour=cause, size=cuantos)) + 
+          scale_colour_discrete(name  ="Cause of Death") +
+          scale_size_continuous(name  ="Number of Casualties") +
+          xlab("Date") + ylab("Fallen")
+```
+
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
